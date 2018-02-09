@@ -1,14 +1,15 @@
-//
-//  CategoryController.swift
-//  VaporBuyOnlinePackageDescription
-//
-//  Created by Ara Hakobyan on 09/02/2018.
-//
-
 import Vapor
 import HTTP
 
 final class CategoryController: ResourceRepresentable {
+    
+    func addRoutes(drop: Droplet) {
+        let basic = drop.grouped("categories")
+        basic.get(handler: index)
+        basic.post(handler: store)
+//        basic.delete(Category.self, handler: delete)
+//        basic.get(Category.self, "", handler: subcategoryIndex)
+    }
     
     func index(_ req: Request) throws -> ResponseRepresentable {
         return try Category.all().makeJSON()
@@ -45,6 +46,12 @@ final class CategoryController: ResourceRepresentable {
         category.name = new.name
         try category.save()
         return category
+    }
+    
+    func subcategoryIndex(_ req: Request, category: Category) throws -> ResponseRepresentable {
+        let subcategory = category.subcategories
+        let json = JSON(node: subcategory.makeJSON)
+        return json
     }
  
     func makeResource() -> Resource<Category> {

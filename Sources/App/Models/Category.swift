@@ -70,3 +70,9 @@ extension Category: Updateable {
     }
 }
 
+extension Category {
+
+    var subcategories: Children<Category, Subcategory> {
+        return children()
+    }
+}
