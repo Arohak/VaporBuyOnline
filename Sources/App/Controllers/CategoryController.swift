@@ -7,8 +7,7 @@ final class CategoryController: ResourceRepresentable {
         let basic = drop.grouped("categories")
         basic.get(handler: index)
         basic.post(handler: store)
-//        basic.delete(Category.self, handler: delete)
-//        basic.get(Category.self, "", handler: subcategoryIndex)
+        basic.get(Category.parameter, "subcategories", handler: subcategories)
     }
     
     func index(_ req: Request) throws -> ResponseRepresentable {
@@ -22,7 +21,10 @@ final class CategoryController: ResourceRepresentable {
     }
     
     func show(_ req: Request, category: Category) throws -> ResponseRepresentable {
-        return category
+        return JSON([
+            "category": try category.makeJSON(),
+            "subcategories": try category.subcategories.all().makeJSON()
+            ])
     }
     
     func delete(_ req: Request, category: Category) throws -> ResponseRepresentable {
@@ -48,10 +50,13 @@ final class CategoryController: ResourceRepresentable {
         return category
     }
     
-    func subcategoryIndex(_ req: Request, category: Category) throws -> ResponseRepresentable {
-        let subcategory = category.subcategories
-        let json = JSON(node: subcategory.makeJSON)
-        return json
+    func subcategories(_ req: Request) throws -> ResponseRepresentable {
+        let category = try req.parameters.next(Category.self)
+        if let limit = req.query?["limit"]?.int, let offset = req.query?["offset"]?.int {
+            let subcategories = try category.subcategories.limit(limit, offset: offset)
+            return try subcategories.all().makeJSON()
+        }
+        return try category.subcategories.all().makeJSON()
     }
  
     func makeResource() -> Resource<Category> {

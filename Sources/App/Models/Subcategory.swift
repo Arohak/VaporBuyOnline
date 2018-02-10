@@ -7,6 +7,7 @@ final class Subcategory: Model {
     
     var name: String
     var src: String
+    let categoryId: Identifier
 
     struct Keys {
         static let id = "id"
@@ -15,7 +16,7 @@ final class Subcategory: Model {
         static let categoryId = "category_id"
     }
     
-    init(name: String, src: String, categoryId: String) {
+    init(name: String, src: String, categoryId: Identifier) {
         self.name = name
         self.src = src
         self.categoryId = categoryId
@@ -56,9 +57,9 @@ extension Subcategory: JSONConvertible {
     
     convenience init(json: JSON) throws {
         self.init(
-            name: try json.get(Subcategory.Keys.name)
-            name: try json.get(Subcategory.Keys.src)
-            name: try json.get(Subcategory.Keys.categoryId)
+            name: try json.get(Subcategory.Keys.name),
+            src: try json.get(Subcategory.Keys.src),
+            categoryId: try json.get(Subcategory.Keys.categoryId)
         )
     }
     
@@ -76,20 +77,19 @@ extension Subcategory: ResponseRepresentable { }
 
 extension Subcategory: Updateable {
     
-    public static var updateableKeys: [UpdateableKey<Category>] {
+    public static var updateableKeys: [UpdateableKey<Subcategory>] {
         return [
-            UpdateableKey(Subcategory.Keys.name, String.self) { subcategory, name in
+            UpdateableKey(Subcategory.Keys.name, String.self, { subcategory, name in
                 subcategory.name = name
-            },
-            UpdateableKey(Subcategory.Keys.src, String.self) { subcategory, src in
+            }),
+            UpdateableKey(Subcategory.Keys.src, String.self, { subcategory, src in
                 subcategory.src = src
-            }
+            })
         ]
     }
 }
 
 extension Subcategory {
-    let categoryId: Identifier
     
     var category: Parent<Subcategory, Category> {
         return parent(id: categoryId)

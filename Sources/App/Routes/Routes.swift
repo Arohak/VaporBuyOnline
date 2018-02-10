@@ -5,8 +5,31 @@ extension Droplet {
     
     func setupRoutes() throws {
         
+//        let query = request.query?["hello"]  // String? // limit=%@&offset=%@
         get("test") { req in
-            let category = try subcategory.category.get() // Category?
+            guard let limit = req.query?["limit"]?.int, let offset = req.query?["offset"]?.int else { return "" }
+            return "requested limit:#\(limit), offset:#\(offset)"
+        }
+
+//        http://localhost:8080/test1/1
+        get("test1", Int.parameter) { req in
+            let userId = try req.parameters.next(Int.self)
+            return "requested #\(userId)"
+        }
+        
+//        http://localhost:8080/test2/1
+        get("test2", ":id") { req in
+            guard let userId = req.parameters["id"]?.int else {
+                throw Abort.badRequest
+            }
+            
+            return "requested #\(userId)"
+        }
+        
+//        http://localhost:8080/test3/nickname/1
+        get("test3", "nickname", Int.parameter) { req in
+            let userId = try req.parameters.next(Int.self)
+            return "requested #\(userId)"
         }
         
         get("version") { req in
@@ -33,8 +56,10 @@ extension Droplet {
         
         get("description") { req in return req.description }
         
-        try resource("posts", PostController.self)
+        try resource("subcategories", SubcategoryController.self)
         
-        try resource("categories", CategoryController.self)
+        let categoryController = CategoryController()
+        categoryController.addRoutes(drop: self)
+//        try resource("categories", CategoryController.self)
     }
 }
